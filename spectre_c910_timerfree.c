@@ -4,51 +4,6 @@
  * Spectre v1 — T-Head XuanTie C910 (BeagleV-Ahead board)
  * Timer-free variant: software-counter thread replaces rdcycle/rdtime.
  *
- * ── C910 D-CACHE COHERENCE ANALYSIS ─────────────────────────────────────
- *
- *  Q: Is C910 D-cache weakly coherent enough for a timer-free oracle?
- *
- *  A: NO — C910 D-cache is STRONGLY coherent between cores.
- *     The two C910 harts on BeagleV-Ahead share a unified 512 KB L2.
- *     The hardware implements MESI (or MOESI) snooping; a store on hart-0
- *     is immediately visible to hart-1 via invalidation messages.  There is
- *     no exploitable incoherence window in the D-cache between harts.
- *
- *  The WEAK link is the I-CACHE:
- *     - I-cache and D-cache are split and NOT hardware-coherent with each
- *       other on the same hart.
- *     - Self-modifying code requires an explicit  fence.i  (or ICACHE.IVA)
- *       to synchronise.  Without it the I-cache can serve stale instructions
- *       even after a D-cache store to the same physical address.
- *     - This means the I-cache has observable asymmetric flush costs that can
- *       act as a side-channel, but the observation still requires TIMING
- *       (I-cache hit < I-cache miss latency).  A purely functional
- *       (zero-timing) oracle is not achievable via coherence alone on C910.
- *
- *  VERDICT: the software-counter approach below is the correct timer-free
- *  implementation for C910.  It avoids every hardware-timer CSR while still
- *  exploiting the standard Flush+Reload timing side-channel.
- *
- * ── HOW THE SOFTWARE COUNTER TIMER WORKS ─────────────────────────────────
- *
- *  A dedicated pthread on the sibling C910 core spins incrementing a
- *  volatile uint64_t.  The main thread reads it before and after each
- *  probe_array access.  Because an L1 D-cache hit on C910 completes in
- *  ~4 cycles and a DRAM miss takes ~150+ cycles, the counter delta is
- *  reliably smaller for a cache-hot line.
- *
- *  C910 @ 1.5 GHz — expected deltas with counter running at ~500 M inc/s:
- *    L1 hit  :   1–5  ticks
- *    L2 hit  :   8–20 ticks
- *    DRAM    :  50–120 ticks
- *
- *  Tune CACHE_HIT_THRESHOLD between 15 and 30 for your BeagleV-Ahead build.
- *
- * ── BUILD ─────────────────────────────────────────────────────────────────
- *
- *  riscv64-linux-gnu-gcc -O1 -march=rv64gcv_xtheadcmo \
- *      -o spectre_c910 spectre_c910_timerfree.c -lpthread
- *
  *  Or on the board:
  *    gcc -O1 -o spectre_c910 spectre_c910_timerfree.c -lpthread
  *
