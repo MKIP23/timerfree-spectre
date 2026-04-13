@@ -1,17 +1,21 @@
- * spectre_c910_timerfree.c
- *
- * Spectre v1 — T-Head XuanTie C910 (BeagleV-Ahead board)
- * Timer-free variant: software-counter thread replaces rdcycle/rdtime.
- *
- *  Or on the board:
- *    gcc -O1 -o spectre_c910 spectre_c910_timerfree.c -lpthread
- *
- *  NOTE: -O1 (not -O2/-O3) prevents the compiler from optimising away the
- *  bounds check in read_content().  Do not add -O2 without verifying the
- *  speculative load is still emitted.
- *
- * ── OPTIONAL: PIN THREADS ─────────────────────────────────────────────────
- *
- *  For cleanest signal, pin the attack thread to hart-0 and the counter
- *  thread to hart-1:
- *    taskset -c 0 ./spectre_c910
+spectre_timerfree.c
+
+Timer-free variant: software-counter thread replaces rdcycle/rdtime.
+
+
+On the board: Spectre v1 — T-Head XuanTie C910 (BeagleV-Ahead board)
+
+gcc -O1 -DC910 -march=rv64gc -o spectre_timerfree spectre_timerfree.c -lpthread
+
+
+For gem5:
+
+Use full system simulation. script provided (riscv-fs.py)
+
+/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv64gc_zicbom_zicbop
+
+
+
+Pin the attack thread to hart-0 and the counter thread to hart-1:
+
+taskset -c 0 ./spectre_timerfree
