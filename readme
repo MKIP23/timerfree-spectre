@@ -12,7 +12,7 @@ For gem5:
 
 Use full system simulation. script provided (riscv-fs.py)
 
-/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv64gc_zicbom_zicbop
+/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv64gc_zicbom_zicbop -o spectre_timerfree spectre_timerfree.c -lpthread
 
 
 
