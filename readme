@@ -15,7 +15,28 @@ Use full system simulation. script provided (riscv-fs.py)
 /opt/riscv/bin/riscv64-unknown-linux-gnu-gcc -march=rv64gc_zicbom_zicbop -o spectre_timerfree spectre_timerfree.c -lpthread
 
 
-
 Pin the attack thread to hart-0 and the counter thread to hart-1:
 
 taskset -c 0 ./spectre_timerfree
+
+
+Installing RISC-V Toolchain
+To cross-compile C code for a RISC-V target, you will need to use the RISC-V toolchain.
+
+$ sudo apt-get install autoconf automake autotools-dev curl python3 python3-pip libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build git cmake libglib2.0-dev libslirp-dev
+$ git clone https://github.com/riscv/riscv-gnu-toolchain
+$ cd riscv-gnu-toolchain/
+$ ./configure --prefix=/opt/riscv
+$ sudo make linux 
+
+
+Installing Gem5 Toolchain
+To install the GEM5 toolchain, execute the following commands:
+
+$ sudo apt install build-essential git m4 scons zlib1g zlib1g-dev     libprotobuf-dev protobuf-compiler libprotoc-dev libgoogle-perftools-dev     python3-dev libboost-all-dev pkg-config python3-tk
+$ git clone https://github.com/gem5/gem5.git
+$ cd gem5/
+$ scons build/RISCV/gem5.opt -j8
+
+
+
